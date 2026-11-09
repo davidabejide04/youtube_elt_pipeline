@@ -1,0 +1,15 @@
+.env
+keys/*
+!keys/.gitkeep
+*.p8
+*.pem
+data/output/
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+dbt_project/target/
+dbt_project/dbt_packages/
+dbt_project/logs/
+logs/
