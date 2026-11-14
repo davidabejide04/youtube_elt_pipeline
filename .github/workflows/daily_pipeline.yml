@@ -1,0 +1,46 @@
+name: daily-pipeline
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # every day at 06:00 UTC
+  workflow_dispatch:       
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+      SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+      SNOWFLAKE_PRIVATE_KEY_PATH: keys/rsa_key.p8
+      SNOWFLAKE_ROLE: LOADER
+      DBT_ROLE: TRANSFORMER
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Write Snowflake private key
+        env:
+          SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
+        run: |
+          mkdir -p keys
+          printf '%s\n' "$SNOWFLAKE_PRIVATE_KEY" > keys/rsa_key.p8
+          chmod 600 keys/rsa_key.p8
+
+      - name: Extract and load
+        run: python run_pipeline.py
+
+      - name: Check source freshness
+        run: python run_dbt.py source freshness
+
+      - name: dbt build (seeds, models, tests)
+        run: python run_dbt.py build

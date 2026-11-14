@@ -1,0 +1,38 @@
+name: youtube_project
+version: "1.0.0"
+config-version: 2
+profile: youtube_elt
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+
+clean-targets: ["target", "dbt_packages"]
+
+vars:
+  short_max_seconds: 60   # videos at or under this length are labelled Short
+
+models:
+  youtube_elt:
+    staging:
+      +materialized: view
+      +schema: staging
+    intermediate:
+      +materialized: view
+      +schema: staging
+    marts:
+      +materialized: table
+      +schema: marts
+
+seeds:
+  youtube_elt:
+    +schema: staging
+    country_codes:
+      +column_types:
+        country_code: varchar
+        country_name: varchar
+    video_categories:
+      +column_types:
+        category_id: varchar
+        category_name: varchar

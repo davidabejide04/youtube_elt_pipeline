@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: stg_channels
+    description: Cleaned channel snapshots, one row per channel per day.
+    columns:
+      - name: channel_snapshot_key
+        tests: [unique, not_null]
+      - name: channel_id
+        tests: [not_null]
+      - name: country_name
+        tests: [not_null]
+  - name: stg_videos
+    description: Cleaned video snapshots, one row per video per day.
+    columns:
+      - name: video_snapshot_key
+        tests: [unique, not_null]
+      - name: video_id
+        tests: [not_null]
+      - name: channel_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_channels')
+                field: channel_id
+      - name: duration_seconds
+        tests: [not_null]

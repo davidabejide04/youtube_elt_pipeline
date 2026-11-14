@@ -1,0 +1,85 @@
+version: 2
+
+models:
+  - name: dim_channel
+    description: One row per channel with its latest attributes.
+    columns:
+      - name: channel_key
+        tests: [unique, not_null]
+      - name: channel_id
+        tests: [unique, not_null]
+      - name: size_tier
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['Micro', 'Small', 'Medium', 'Large', 'Mega', 'Hidden']
+
+  - name: dim_video
+    description: One row per video with its latest attributes.
+    columns:
+      - name: video_key
+        tests: [unique, not_null]
+      - name: video_id
+        tests: [unique, not_null]
+      - name: channel_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_channel')
+                field: channel_key
+      - name: format_type
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['Short', 'Long-form']
+
+  - name: dim_date
+    description: Calendar dimension from 2020-01-01.
+    columns:
+      - name: date_key
+        tests: [unique, not_null]
+
+  - name: fact_video_performance_daily
+    description: Daily snapshot of each video's statistics and derived performance metrics.
+    columns:
+      - name: video_performance_key
+        tests: [unique, not_null]
+      - name: video_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_video')
+                field: video_key
+      - name: channel_key
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_channel')
+                field: channel_key
+      - name: date_key
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+
+  - name: fact_channel_kpis
+    description: Daily channel metrics including subscriber growth and 30-day engagement.
+    columns:
+      - name: channel_kpi_key
+        tests: [unique, not_null]
+      - name: channel_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_channel')
+                field: channel_key
+      - name: date_key
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key

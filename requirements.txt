@@ -1,0 +1,6 @@
+google-api-python-client>=2.100
+python-dotenv>=1.0
+pandas>=2.0
+snowflake-connector-python[pandas]>=3.12
+dbt-core>=1.11,<1.13
+dbt-snowflake>=1.11,<1.13
